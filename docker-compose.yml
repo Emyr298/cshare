@@ -1,0 +1,110 @@
+# THIS IS FOR LOCAL DEV
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: cshare-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - cshare-network
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: cshare-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - 9092:9092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - cshare-network
+
+  debezium:
+    image: quay.io/debezium/connect:latest
+    container_name: cshare-debezium-connector
+    # restart: unless-stopped
+    ports:
+      - "8083:8083"
+    environment:
+      BOOTSTRAP_SERVERS: kafka:29092
+      GROUP_ID: debezium
+      CONFIG_STORAGE_TOPIC: debezium_configs
+      OFFSET_STORAGE_TOPIC: debezium_offsets
+    depends_on:
+      - kafka
+      - content-db
+    networks:
+      - cshare-network
+
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+  #   container_name: cshare-elasticsearch
+  #   # restart: unless-stopped
+  #   ports:
+  #     - "9200:9200"
+  #   environment:
+  #     discovery.type: single-node
+  #     ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+  #   mem_limit: ${MEM_LIMIT}
+  #   networks:
+  #     - cshare-network
+  
+  content-db:
+    image: postgres:latest
+    container_name: cshare-content-db
+    # restart: unless-stopped
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    networks:
+      - cshare-network
+
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - 8080:8080
+    depends_on:
+      - kafka
+      - debezium
+    environment:
+      KAFKA_CLUSTERS_0_NAME: Kafka
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: debezium
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://debezium:8083
+    networks:
+      - cshare-network
+  
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:8.15.3
+  #   container_name: cshare-kibana
+  #   # restart: unless-stopped
+  #   ports:
+  #     - 5601:5601
+  #   environment:
+  #     SERVERNAME: kibana
+  #     ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+  #     ELASTICSEARCH_USERNAME: elastic
+  #     ELASTICSEARCH_PASSWORD: ${ELASTIC_PASSWORD}
+  #   mem_limit: ${MEM_LIMIT}
+  #   volumes:
+  #     - ./container-data/kibana/data:/usr/share/kibana/data
+  #   depends_on:
+  #     - elasticsearch
+  #   networks:
+  #     - cshare-network
+
+networks:
+  cshare-network:
+    driver: bridge
