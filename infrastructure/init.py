@@ -18,6 +18,4 @@ def init_debezium():
     os.system(docker_cmd)
 
 if __name__ == '__main__':
-    os.system('docker compose up -d')
-    time.sleep(10)
     init_debezium()
