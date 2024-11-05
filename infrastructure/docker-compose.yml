@@ -89,6 +89,8 @@ services:
     volumes:
       - ./container-data/localstack/data:/var/lib/localstack
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - cshare-network
 
   kafka-ui:
     container_name: kafka-ui
