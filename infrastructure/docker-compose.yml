@@ -7,6 +7,9 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - cshare-zookeeper-data:/var/lib/zookeeper/data
+      - cshare-zookeeper-log:/var/lib/zookeeper/log
     networks:
       - cshare-network
 
@@ -25,7 +28,7 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     volumes:
-      - ./container-data/kafka/data:/var/lib/kafka/data
+      - cshare-kafka-data:/var/lib/kafka/data
     networks:
       - cshare-network
 
@@ -43,6 +46,10 @@ services:
     depends_on:
       - kafka
       - content-db
+    volumes:
+      - cshare-debezium-data:/kafka/data
+      - cshare-debezium-logs:/kafka/logs
+      - cshare-debezium-config:/kafka/config
     networks:
       - cshare-network
 
@@ -70,7 +77,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - ./container-data/postgres/data:/var/lib/postgresql/data
+      - cshare-postgres-data:/var/lib/postgresql/data
     networks:
       - cshare-network
 
@@ -87,7 +94,7 @@ services:
       - DEFAULT_AWS_ACCESS_KEY_ID=test
       - DEFAULT_AWS_SECRET_ACCESS_KEY=test
     volumes:
-      - ./container-data/localstack/data:/var/lib/localstack
+      - cshare-localstack-data:/var/lib/localstack
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - cshare-network
@@ -130,3 +137,21 @@ services:
 networks:
   cshare-network:
     driver: bridge
+
+volumes:
+  cshare-zookeeper-data:
+    external: true
+  cshare-zookeeper-log:
+    external: true
+  cshare-postgres-data:
+    external: true
+  cshare-kafka-data:
+    external: true
+  cshare-localstack-data:
+    external: true
+  cshare-debezium-data:
+    external: true
+  cshare-debezium-logs:
+    external: true
+  cshare-debezium-config:
+    external: true

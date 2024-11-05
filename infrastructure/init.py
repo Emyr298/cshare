@@ -1,7 +1,7 @@
 import dotenv
 dotenv.load_dotenv()
 
-import os, json, time
+import os, json
 
 print(os.environ.get('IS_ENV_LOADED'))
 
