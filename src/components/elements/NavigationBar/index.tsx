@@ -3,6 +3,7 @@ import { Home, Users } from "lucide-react";
 import { SearchBar } from "../SearchBar";
 import { ProfileButton } from "../ProfileButton";
 import Link from "next/link";
+import { ModeToggle } from "../ModeToggle";
 
 export default function NavigationBar() {
   return (
@@ -13,6 +14,7 @@ export default function NavigationBar() {
           <SearchBar />
         </div>
         <div className="flex flex-row items-center gap-2">
+          <ModeToggle />
           <Button variant="ghost" size="icon">
             <Home />
           </Button>
