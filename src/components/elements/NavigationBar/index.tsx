@@ -1,11 +1,21 @@
+"use client"
+
 import { Button } from "@/components/ui/button";
 import { Home, Users } from "lucide-react";
 import { SearchBar } from "../SearchBar";
 import { ProfileButton } from "../ProfileButton";
 import Link from "next/link";
 import { ModeToggle } from "../ModeToggle";
+import { usePathname } from "next/navigation";
+import { Config } from "@/config";
 
 export default function NavigationBar() {
+  const pathname = usePathname();
+
+  if (Config.hidden_navbar_paths.includes(pathname)) {
+    return <></>
+  }
+
   return (
     <div className="w-full px-64 py-2 border-b-2 border-secondary bg-primary-foreground">
       <div className="flex justify-between items-center">
