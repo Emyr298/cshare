@@ -7,12 +7,12 @@ import { ProfileButton } from "../ProfileButton";
 import Link from "next/link";
 import { ModeToggle } from "../ModeToggle";
 import { usePathname } from "next/navigation";
-import { Config } from "@/config";
+import { ClientConfig } from "@/config";
 
 export default function NavigationBar() {
   const pathname = usePathname();
 
-  if (Config.hidden_navbar_paths.includes(pathname)) {
+  if (ClientConfig.hiddenNavbarPaths.includes(pathname)) {
     return <></>
   }
 
