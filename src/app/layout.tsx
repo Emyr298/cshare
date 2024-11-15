@@ -37,7 +37,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <NavigationBar />
-          <main>
+          <main className="px-64 py-4">
             {children}
           </main>
         </ThemeProvider>
