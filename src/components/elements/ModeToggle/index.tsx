@@ -21,8 +21,8 @@ export function ModeToggle() {
         }
       }}
     >
-       { resolvedTheme === 'dark' && <Moon /> }
-       { resolvedTheme === 'light' && <Sun /> }
+       <Sun className="block dark:hidden" />
+       <Moon className="hidden dark:block" />
     </Button>
   )
 }
