@@ -1,10 +1,6 @@
-import { OAuthProvider } from "@/types/oauth";
 import { LoginCallbackModuleProps } from "./interface";
-import { fetchAuthCredentials } from "@/lib/api/auth.api";
 
-export const LoginCallbackModule: React.FC<LoginCallbackModuleProps> = ({
-    provider,
-}) => {
+export const LoginCallbackModule: React.FC<LoginCallbackModuleProps> = () => {
   return (
     <div className="h-screen -m-4 flex items-center justify-center">
       <div className="border-[1px] border-secondary rounded-md w-96 p-4 shadow-md bg-primary-foreground flex flex-col items-center gap-2">
@@ -15,4 +11,4 @@ export const LoginCallbackModule: React.FC<LoginCallbackModuleProps> = ({
       </div>
     </div>
   );
-}
+};
