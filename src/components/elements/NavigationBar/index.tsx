@@ -12,9 +12,13 @@ import { ClientConfig } from "@/config";
 export default function NavigationBar() {
   const pathname = usePathname();
 
-  if (ClientConfig.hiddenNavbarPaths.includes(pathname)) {
-    return <></>
-  }
+  const isHidden = ClientConfig.hiddenNavbarPaths.some((path) => {
+    const escapedPath = path.replace('/', '\\/');
+    const regex = new RegExp(`^${escapedPath}(\/|$)`);
+    return pathname.match(regex);
+  });
+
+  if (isHidden) return <></>
 
   return (
     <nav className="w-full px-64 py-2 border-b-2 border-secondary bg-primary-foreground">
