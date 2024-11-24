@@ -1,31 +1,30 @@
-import { fetchAuthCredentials } from "@/lib/api/auth.api";
 import { LoginCallbackModuleProps } from "./interface";
-import { useQuery } from "@tanstack/react-query";
 import { writing } from "./constants";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useAuthMutation } from "@/components/queries";
 
 export const LoginCallbackModule: React.FC<LoginCallbackModuleProps> = ({
   accessToken,
   provider,
 }) => {
   const router = useRouter();
-
-  const { data, error, isLoading } = useQuery({
-    queryKey: ["auth", accessToken, provider],
-    queryFn: async () => {
-      if (accessToken.length === 0) {
-        throw new Error("invalid access token");
-      }
-      return await fetchAuthCredentials(accessToken, provider);
-    },
-  });
+  const { data, error, mutate } = useAuthMutation();
 
   useEffect(() => {
-    if (!isLoading && data) {
+    if (accessToken && provider) {
+      mutate({
+        providerAccessToken: accessToken,
+        provider: provider,
+      });
+    }
+  }, [mutate, accessToken, provider]);
+
+  useEffect(() => {
+    if (data) {
       router.replace("/");
     }
-  }, [data, isLoading]);
+  }, [data]);
 
   const title = writing[error ? "error" : "loading"].title;
   const description = writing[error ? "error" : "loading"].description;

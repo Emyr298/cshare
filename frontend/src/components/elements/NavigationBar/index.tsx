@@ -8,9 +8,13 @@ import Link from "next/link";
 import { ModeToggle } from "../ModeToggle";
 import { usePathname } from "next/navigation";
 import { ClientConfig } from "@/config";
+import { useAuth } from "@/components/queries";
+import { useAuthStore } from "@/components/stores";
 
 export default function NavigationBar() {
   const pathname = usePathname();
+
+  const { data: user, isLoading: isUserLoading } = useAuth();
 
   const isHidden = ClientConfig.hiddenNavbarPaths.some((path) => {
     const escapedPath = path.replace("/", "\\/");
@@ -37,6 +41,7 @@ export default function NavigationBar() {
           <Button variant="ghost" size="icon">
             <Users />
           </Button>
+          {user?.profile.username}
           <ProfileButton />
         </div>
       </div>
