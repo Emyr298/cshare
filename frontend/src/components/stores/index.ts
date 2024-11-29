@@ -1,2 +1,2 @@
-export * from './auth.store';
-export * from './auth.interface';
+export * from "./auth.store";
+export * from "./auth.interface";

@@ -23,13 +23,11 @@ export const fetchAuthCredentials = async (
   return response.data.data;
 };
 
-export const fetchUser = async (
-  accessToken: string,
-) => {
+export const fetchUser = async (accessToken: string) => {
   const response: AxiosResponse<IBaseApiResponse<IProfileResponse>> =
     await axios.get(`${ClientConfig.apiUrl}/api/v1/users/profile`, {
       headers: {
-        "Authorization": `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
   if (response.status != 200 || !response.data.data) {
@@ -40,4 +38,4 @@ export const fetchUser = async (
     }
   }
   return response.data.data;
-}
+};

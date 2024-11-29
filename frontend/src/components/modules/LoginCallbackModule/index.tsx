@@ -1,3 +1,5 @@
+"use client";
+
 import { LoginCallbackModuleProps } from "./interface";
 import { writing } from "./constants";
 import { useRouter } from "next/navigation";

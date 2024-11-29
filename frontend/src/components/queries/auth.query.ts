@@ -15,7 +15,7 @@ export const useAuth = () => {
         lastName: "",
         avatarUrl: "",
       };
-      
+
       let isAuthenticated = false;
       try {
         profile = await fetchUser(String(accessToken));
@@ -41,12 +41,15 @@ export const useAuthMutation = () => {
         throw new Error("invalid provider access token");
       }
 
-      const { accessToken, refreshToken } = await fetchAuthCredentials(data.providerAccessToken, data.provider);
+      const { accessToken, refreshToken } = await fetchAuthCredentials(
+        data.providerAccessToken,
+        data.provider,
+      );
 
       setAccessToken(accessToken);
       setRefreshToken(refreshToken);
 
-      queryClient.invalidateQueries({ queryKey: ['auth'] });
+      queryClient.invalidateQueries({ queryKey: ["auth"] });
 
       return { accessToken, refreshToken };
     },
