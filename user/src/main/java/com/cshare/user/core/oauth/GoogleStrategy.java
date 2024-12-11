@@ -15,7 +15,6 @@ public class GoogleStrategy implements OAuthStrategy {
     private final String googleAPI;
 
     public Mono<String> getEmail(String token) {
-        System.out.println(googleAPI + "?accessToken=" + token);
         return webClient.get()
                 .uri(googleAPI + "?accessToken=" + token)
                 .retrieve()

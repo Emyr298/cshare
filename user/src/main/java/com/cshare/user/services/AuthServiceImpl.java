@@ -25,7 +25,6 @@ public class AuthServiceImpl implements AuthService {
     private String refreshTokenSecret; // TODO: will implement rotations per session
 
     public Mono<LoginResponseDto> login(LoginRequestDto payload) {
-        System.out.println(refreshTokenSecret);
         OAuthStrategy strategy = oAuthStrategyFactory.create(payload.getProvider());
         Mono<String> emailMono = strategy.getEmail(payload.getProviderAccessToken());
         Mono<User> userMono = emailMono.flatMap(userService::getUserByEmail);
