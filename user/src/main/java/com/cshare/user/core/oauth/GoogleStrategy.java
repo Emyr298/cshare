@@ -1,25 +1,21 @@
-package com.cshare.user.services;
+package com.cshare.user.core.oauth;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.cshare.user.dto.OAuth.GoogleResponseDto;
+import com.cshare.user.dto.oauth.GoogleResponseDto;
 import com.cshare.user.exceptions.PermissionException;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-@Service
 @RequiredArgsConstructor
-public class OAuthServiceImpl {
+public class GoogleStrategy implements OAuthStrategy {
     private final WebClient webClient;
+    private final String googleAPI;
 
-    @Value("${cshare.user.api.oauth.google}")
-    private String googleAPI;
-
-    public Mono<String> getEmailFromGoogleToken(String token) {
+    public Mono<String> getEmail(String token) {
+        System.out.println(googleAPI + "?accessToken=" + token);
         return webClient.get()
                 .uri(googleAPI + "?accessToken=" + token)
                 .retrieve()
