@@ -5,7 +5,8 @@ import org.springframework.stereotype.Service;
 
 import com.cshare.user.core.oauth.OAuthStrategy;
 import com.cshare.user.core.oauth.factory.OAuthStrategyFactory;
-import com.cshare.user.dto.auth.LoginRequestDto;
+import com.cshare.user.dto.auth.ProviderTokenDto;
+import com.cshare.user.exceptions.NotFoundException;
 import com.cshare.user.dto.auth.LoginResponseDto;
 import com.cshare.user.models.User;
 
@@ -24,10 +25,14 @@ public class AuthServiceImpl implements AuthService {
     @Value("${cshare.user.auth.refresh-token.secret}")
     private String refreshTokenSecret; // TODO: will implement rotations per session
 
-    public Mono<LoginResponseDto> login(LoginRequestDto payload) {
+    public Mono<User> getUserFromProviderToken(ProviderTokenDto payload) {
         OAuthStrategy strategy = oAuthStrategyFactory.create(payload.getProvider());
         Mono<String> emailMono = strategy.getEmail(payload.getProviderAccessToken());
-        Mono<User> userMono = emailMono.flatMap(userService::getUserByEmail);
+        return emailMono.flatMap(userService::getUserByEmail);
+    }
+
+    public Mono<LoginResponseDto> login(ProviderTokenDto payload) {
+        Mono<User> userMono = getUserFromProviderToken(payload);
         Mono<Tuple2<String, String>> tokensMono = userMono.flatMap(user -> Mono.zip(
                 jwtService.signRefreshToken(user.getId().toString(), refreshTokenSecret),
                 jwtService.signAccessToken(user.getId().toString())));

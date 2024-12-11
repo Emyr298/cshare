@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.cshare.user.dto.users.CreateUserDto;
 import com.cshare.user.models.User;
 import com.cshare.user.repositories.UserRepository;
 
@@ -21,5 +22,16 @@ public class UserServiceImpl implements UserService {
 
     public Mono<User> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+
+    public Mono<User> createUser(CreateUserDto payload) {
+        User user = User.builder()
+                .username(payload.getUsername())
+                .email(payload.getEmail())
+                .name(payload.getName())
+                .avatarUrl(payload.getAvatarUrl())
+                .coverUrl(payload.getCoverUrl())
+                .build();
+        return userRepository.save(user);
     }
 }

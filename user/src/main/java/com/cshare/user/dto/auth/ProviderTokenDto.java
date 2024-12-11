@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class LoginRequestDto {
+public class ProviderTokenDto {
     @NotNull
     private String providerAccessToken;
 
