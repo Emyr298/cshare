@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import com.cshare.user.core.oauth.OAuthStrategy;
 import com.cshare.user.core.oauth.factory.OAuthStrategyFactory;
 import com.cshare.user.dto.auth.ProviderTokenDto;
-import com.cshare.user.exceptions.NotFoundException;
 import com.cshare.user.dto.auth.LoginResponseDto;
 import com.cshare.user.models.User;
 

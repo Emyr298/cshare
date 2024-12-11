@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cshare.user.dto.auth.ProviderTokenDto;
-import com.cshare.user.models.User;
 import com.cshare.user.dto.auth.CheckDto;
 import com.cshare.user.dto.auth.LoginResponseDto;
 import com.cshare.user.services.AuthService;
