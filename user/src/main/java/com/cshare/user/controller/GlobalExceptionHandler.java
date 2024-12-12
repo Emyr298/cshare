@@ -29,6 +29,19 @@ public class GlobalExceptionHandler extends ResponseStatusExceptionHandler {
         return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorDto(ex.getMessage())));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public Mono<ResponseEntity<ErrorDto>> handlePermissionException(IllegalArgumentException ex,
+            ServerWebExchange exchange) {
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ex.getMessage())));
+    }
+
+    @ExceptionHandler(ClassCastException.class)
+    public Mono<ResponseEntity<ErrorDto>> handlePermissionException(ClassCastException ex,
+            ServerWebExchange exchange) {
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorDto("A file attribute contains a non-file value instead of a file")));
+    }
+
     @ExceptionHandler(WebExchangeBindException.class)
     public Mono<ResponseEntity<ErrorDto>> handleExchangeBindException(WebExchangeBindException ex,
             ServerWebExchange exchange) {
