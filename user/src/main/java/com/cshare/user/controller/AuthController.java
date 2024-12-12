@@ -1,7 +1,6 @@
 package com.cshare.user.controller;
 
 import org.springframework.http.codec.multipart.FilePart;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,8 +8,6 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cshare.user.dto.auth.ProviderTokenDto;
-import com.cshare.user.dto.users.CreateUserLiteDto;
-import com.cshare.user.exceptions.PermissionException;
 import com.cshare.user.core.oauth.OAuthProvider;
 import com.cshare.user.dto.auth.CheckDto;
 import com.cshare.user.dto.auth.LoginResponseDto;
@@ -18,7 +15,6 @@ import com.cshare.user.dto.auth.ProviderRegisterDto;
 import com.cshare.user.services.AuthService;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
@@ -44,10 +40,12 @@ public class AuthController {
             @RequestPart("providerAccessToken") String providerAccessToken) {
         Mono<FilePart> avatarCheck = avatarImageMono
                 .doOnError(ClassCastException.class,
-                        exc -> Mono.error(new IllegalArgumentException("avatarImage cannot be empty")));
+                        exc -> Mono.error(new IllegalArgumentException(
+                                "avatarImage cannot be empty")));
         Mono<FilePart> coverCheck = coverImageMono
                 .doOnError(ClassCastException.class,
-                        exc -> Mono.error(new IllegalArgumentException("avatarImage cannot be empty")));
+                        exc -> Mono.error(new IllegalArgumentException(
+                                "avatarImage cannot be empty")));
         Mono<OAuthProvider> providerCheck = Mono.just(provider).map(OAuthProvider::valueOf);
 
         return Mono.zip(avatarCheck, coverCheck, providerCheck).flatMap(tuple -> {
