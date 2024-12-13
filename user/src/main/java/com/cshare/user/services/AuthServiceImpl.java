@@ -1,6 +1,9 @@
 package com.cshare.user.services;
 
 import java.net.URL;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.codec.multipart.FilePart;
@@ -14,6 +17,7 @@ import com.cshare.user.dto.users.CreateUserDto;
 import com.cshare.user.dto.auth.LoginResponseDto;
 import com.cshare.user.dto.auth.ProviderRegisterDto;
 import com.cshare.user.models.User;
+import com.cshare.user.utils.FileUtils;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
@@ -48,37 +52,49 @@ public class AuthServiceImpl implements AuthService {
 
     public Mono<LoginResponseDto> register(ProviderRegisterDto payload, FilePart avatarImage,
             FilePart coverImage) {
+        String userId = UUID.randomUUID().toString();
+
         OAuthStrategy strategy = oAuthStrategyFactory.create(payload.getProvider());
         Mono<String> emailMono = strategy.getEmail(payload.getProviderAccessToken());
 
-        Flux<FilePart> imagePartFlux = Flux.just(avatarImage, coverImage);
-        Flux<URL> imageUrlFlux = imagePartFlux.flatMap(filePartStorage::uploadFile);
+        Mono<List<URL>> imageUrlFlux = Flux.just(avatarImage, coverImage).flatMap(imagePart -> {
+            String sanitizedFileName = imagePart.filename().replaceAll("[^A-Za-z0-9.]", "_");
+            String ext = FileUtils.getFileExtension(sanitizedFileName);
+            String remotePath = Paths.get(userId, UUID.randomUUID().toString() + "." + ext).toString();
+            return filePartStorage.uploadFile(remotePath, imagePart);
+        }).collectList();
 
-        Mono<URL> avatarUrlMono = imageUrlFlux.elementAt(0);
-        Mono<URL> coverUrlMono = imageUrlFlux.elementAt(1);
+        Mono<User> userMono = emailMono.flatMap(email -> {
+            Mono<Object> isNotExistsMono = userService.getUserByEmail(email).flatMap(user -> {
+                if (user != null) {
+                    return Mono.error(
+                            new IllegalArgumentException(
+                                    "User with email " + user.getEmail() + " is already registered"));
+                }
+                return Mono.empty();
+            });
 
-        Mono<User> userMono = Mono
-                .zip(avatarUrlMono, coverUrlMono, emailMono)
-                .flatMap(tuple -> userService.createUser(
-                        new CreateUserDto(
-                                payload.getUsername(),
-                                tuple.getT3(),
-                                payload.getName(),
-                                tuple.getT1().toString(),
-                                tuple.getT2().toString())));
+            Mono<User> userCreateMono = imageUrlFlux
+                    .flatMap(urls -> {
+                        CreateUserDto dto = CreateUserDto.builder()
+                                .id(userId)
+                                .username(payload.getUsername())
+                                .email(email)
+                                .name(payload.getName())
+                                .avatarUrl(urls.get(0).toString())
+                                .coverUrl(urls.get(1).toString())
+                                .build();
+                        return userService.createUser(dto);
+                    });
 
-        Mono<Object> isNotExistsMono = emailMono.flatMap(userService::getUserByEmail).flatMap(user -> {
-            if (user != null) {
-                return Mono.error(
-                        new IllegalArgumentException("User with email " + user.getEmail() + " is already registered"));
-            }
-            return Mono.empty();
+            return isNotExistsMono.then(userCreateMono);
         });
 
-        Mono<Tuple2<String, String>> tokensMono = isNotExistsMono.then(userMono).flatMap(user -> Mono.zip(
+        Mono<Tuple2<String, String>> tokensMono = userMono.flatMap(user -> Mono.zip(
                 jwtService.signRefreshToken(user.getId().toString(), refreshTokenSecret),
                 jwtService.signAccessToken(user.getId().toString())));
 
-        return tokensMono.map(tokens -> new LoginResponseDto(tokens.getT1(), tokens.getT2()));
+        return tokensMono.map(tokens -> new LoginResponseDto(tokens.getT1(),
+                tokens.getT2()));
     }
 }
