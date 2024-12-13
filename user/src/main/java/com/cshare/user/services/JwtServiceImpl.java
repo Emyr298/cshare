@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.cshare.user.exceptions.PermissionException;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -22,6 +25,24 @@ public class JwtServiceImpl implements JwtService {
 
     @Value("${cshare.user.auth.refresh-token.expiration-seconds}")
     private Long refreshTokenExpirationSeconds;
+
+    public Mono<Boolean> isAccessTokenValid(String token) {
+        try {
+            JWT.require(Algorithm.HMAC256(accessTokenSecret)).build().verify(token);
+            return Mono.just(true);
+        } catch (JWTVerificationException e) {
+            return Mono.just(false);
+        }
+    }
+
+    public Mono<String> getAccessTokenUserId(String accessToken) {
+        try {
+            DecodedJWT decodedJwt = JWT.require(Algorithm.HMAC256(accessTokenSecret)).build().verify(accessToken);
+            return Mono.just(decodedJwt.getSubject());
+        } catch (JWTVerificationException exc) {
+            return Mono.error(new PermissionException("invalid access token"));
+        }
+    }
 
     public Mono<String> signAccessToken(String userId) {
         Date expiredAt = new Date();

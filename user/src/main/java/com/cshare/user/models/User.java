@@ -1,5 +1,6 @@
 package com.cshare.user.models;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -15,7 +16,7 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 @Table("users")
-public class User {
+public class User implements Serializable {
     @Id
     @Column("id")
     private UUID id;

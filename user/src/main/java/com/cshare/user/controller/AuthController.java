@@ -1,6 +1,9 @@
 package com.cshare.user.controller;
 
 import org.springframework.http.codec.multipart.FilePart;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +26,12 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+
+    @GetMapping("/user")
+    public Mono<String> getUser(Authentication authentication) {
+        System.out.println(authentication.getPrincipal());
+        return Mono.just("Meh");
+    }
 
     @PostMapping("/login")
     public Mono<LoginResponseDto> login(
