@@ -51,14 +51,14 @@ public class AuthServiceImpl implements AuthService {
         OAuthStrategy strategy = oAuthStrategyFactory.create(payload.getProvider());
         Mono<String> emailMono = strategy.getEmail(payload.getProviderAccessToken());
 
-        Flux<FilePart> flux = Flux.just(avatarImage, coverImage);
-        var imageUrls = flux.flatMap(filePartStorage::uploadFile);
+        Flux<FilePart> imagePartFlux = Flux.just(avatarImage, coverImage);
+        Flux<URL> imageUrlFlux = imagePartFlux.flatMap(filePartStorage::uploadFile);
 
-        Mono<URL> avatarUrl = imageUrls.elementAt(0);
-        Mono<URL> coverUrl = imageUrls.elementAt(1);
+        Mono<URL> avatarUrlMono = imageUrlFlux.elementAt(0);
+        Mono<URL> coverUrlMono = imageUrlFlux.elementAt(1);
 
-        var userMono = Mono
-                .zip(avatarUrl, coverUrl, emailMono)
+        Mono<User> userMono = Mono
+                .zip(avatarUrlMono, coverUrlMono, emailMono)
                 .flatMap(tuple -> userService.createUser(
                         new CreateUserDto(
                                 payload.getUsername(),
@@ -66,9 +66,19 @@ public class AuthServiceImpl implements AuthService {
                                 payload.getName(),
                                 tuple.getT1().toString(),
                                 tuple.getT2().toString())));
-        Mono<Tuple2<String, String>> tokensMono = userMono.flatMap(user -> Mono.zip(
+
+        Mono<Object> isNotExistsMono = emailMono.flatMap(userService::getUserByEmail).flatMap(user -> {
+            if (user != null) {
+                return Mono.error(
+                        new IllegalArgumentException("User with email " + user.getEmail() + " is already registered"));
+            }
+            return Mono.empty();
+        });
+
+        Mono<Tuple2<String, String>> tokensMono = isNotExistsMono.then(userMono).flatMap(user -> Mono.zip(
                 jwtService.signRefreshToken(user.getId().toString(), refreshTokenSecret),
                 jwtService.signAccessToken(user.getId().toString())));
+
         return tokensMono.map(tokens -> new LoginResponseDto(tokens.getT1(), tokens.getT2()));
     }
 }
