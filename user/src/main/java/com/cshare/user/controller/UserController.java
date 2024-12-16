@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cshare.user.dto.ResponseDto;
 import com.cshare.user.models.User;
 import com.cshare.user.utils.AuthUtils;
 
@@ -16,7 +17,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class UserController {
     @GetMapping("/current")
-    public Mono<User> user(Authentication authentication) {
-        return Mono.just(AuthUtils.getCurrentUser(authentication));
+    public Mono<ResponseDto<User>> user(Authentication authentication) {
+        return Mono.just(AuthUtils.getCurrentUser(authentication)).map(ResponseDto::new);
     }
 }

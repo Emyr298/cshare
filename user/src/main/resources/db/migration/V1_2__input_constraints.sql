@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD CONSTRAINT username_min_length CHECK (LENGTH("username") >= 8);
