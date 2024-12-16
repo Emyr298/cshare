@@ -9,7 +9,9 @@ import { ModeToggle } from "../ModeToggle";
 import { usePathname } from "next/navigation";
 import { ClientConfig } from "@/config";
 import { useAuth } from "@/components/queries";
-import { useAuthStore } from "@/components/stores";
+import { guestCheck } from "@/lib/auth";
+import { User } from "@/types";
+import React from "react";
 
 export default function NavigationBar() {
   const pathname = usePathname();
@@ -18,8 +20,8 @@ export default function NavigationBar() {
 
   const isHidden = ClientConfig.hiddenNavbarPaths.some((path) => {
     const escapedPath = path.replace("/", "\\/");
-    const regex = new RegExp(`^${escapedPath}(\/|$)`);
-    return pathname.match(regex);
+    const regex = new RegExp(`^${escapedPath}(/|$)`);
+    return RegExp(regex).exec(pathname);
   });
 
   if (isHidden) return <></>;
@@ -35,16 +37,43 @@ export default function NavigationBar() {
         </div>
         <div className="flex flex-row items-center gap-2">
           <ModeToggle />
-          <Button variant="ghost" size="icon">
-            <Home />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <Users />
-          </Button>
-          {user?.profile.username}
-          <ProfileButton />
+          {isUserLoading ? <div>Loading..</div> : <Profile user={user!.data} />}
         </div>
       </div>
     </nav>
   );
 }
+
+const Profile: React.FC<{
+  user: User;
+}> = ({ user }) => {
+  if (guestCheck(user)) {
+    return (
+      <>
+        <Link href="/login">
+          <Button className="w-fit p-4" variant="outline" size="icon">
+            Login
+          </Button>
+        </Link>
+        <Link href="/login">
+          <Button className="w-fit p-4" variant="default" size="icon">
+            Create Account
+          </Button>
+        </Link>
+      </>
+    );
+  } else {
+    return (
+      <>
+        <Button variant="ghost" size="icon">
+          <Home />
+        </Button>
+        <Button variant="ghost" size="icon">
+          <Users />
+        </Button>
+        {user.username}
+        <ProfileButton />
+      </>
+    );
+  }
+};

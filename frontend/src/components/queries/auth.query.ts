@@ -1,30 +1,29 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { IAuthMutationParams, IUser } from "./auth.interface";
-import { fetchAuthCredentials, fetchUser, IProfileResponse } from "@/lib/api";
+import { AuthMutationParams, AuthInfo } from "./auth.interface";
+import { fetchAuthCredentials, fetchUser } from "@/lib/api";
 import { useAuthStore } from "../stores";
+import { GUEST_USER } from "@/lib/auth";
 
 export const useAuth = () => {
   const accessToken = useAuthStore((state) => state.accessToken);
-
   return useQuery({
     queryKey: ["auth"],
-    queryFn: async (): Promise<IUser> => {
-      let profile = {
-        username: "guest",
-        firstName: "Guest",
-        lastName: "",
-        avatarUrl: "",
-      };
+    queryFn: async (): Promise<AuthInfo> => {
+      if (!accessToken) {
+        throw new Error("access token cannot be null");
+      }
+
+      let data = GUEST_USER;
 
       let isAuthenticated = false;
       try {
-        profile = await fetchUser(String(accessToken));
+        data = await fetchUser(String(accessToken));
         isAuthenticated = true;
       } catch {
         isAuthenticated = false;
       }
 
-      return { profile, isAuthenticated };
+      return { data, isAuthenticated };
     },
   });
 };
@@ -36,7 +35,7 @@ export const useAuthMutation = () => {
   const setRefreshToken = useAuthStore((state) => state.setRefreshToken);
 
   return useMutation({
-    mutationFn: async (data: IAuthMutationParams) => {
+    mutationFn: async (data: AuthMutationParams) => {
       if (data.providerAccessToken.length === 0) {
         throw new Error("invalid provider access token");
       }

@@ -1,12 +1,11 @@
-import { IProfileResponse } from "@/lib/api";
-import { OAuthProvider } from "@/types";
+import { OAuthProvider, User } from "@/types";
 
-export interface IAuthMutationParams {
+export interface AuthMutationParams {
   providerAccessToken: string;
   provider: OAuthProvider;
 }
 
-export interface IUser {
-  profile: IProfileResponse;
+export interface AuthInfo {
+  data: User;
   isAuthenticated: boolean;
 }

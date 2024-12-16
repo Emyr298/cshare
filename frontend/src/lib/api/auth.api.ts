@@ -9,7 +9,7 @@ export const fetchAuthCredentials = async (
   provider: OAuthProvider,
 ) => {
   const response: AxiosResponse<IBaseApiResponse<IAuthCredentialsResponse>> =
-    await axios.post(`${ClientConfig.apiUrl}/api/v1/users/auth/login`, {
+    await axios.post(`${ClientConfig.apiUrl}/api/v1/auth/login`, {
       providerAccessToken,
       provider,
     });
@@ -25,7 +25,7 @@ export const fetchAuthCredentials = async (
 
 export const fetchUser = async (accessToken: string) => {
   const response: AxiosResponse<IBaseApiResponse<IProfileResponse>> =
-    await axios.get(`${ClientConfig.apiUrl}/api/v1/users/profile`, {
+    await axios.get(`${ClientConfig.apiUrl}/api/v1/users/current`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

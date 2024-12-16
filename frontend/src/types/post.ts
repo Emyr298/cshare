@@ -1,13 +1,13 @@
-import { UserPublic } from "./user"
+import { UserPublic } from "./user";
 
 export interface Post {
-  title: string
-  description: string
-  user: UserPublic
+  title: string;
+  description: string;
+  user: UserPublic;
 }
 
 export interface PostSneakPeek {
-  title: string
-  peek: string
-  user: UserPublic
+  title: string;
+  peek: string;
+  user: UserPublic;
 }
