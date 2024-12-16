@@ -43,7 +43,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     public Mono<LoginResponseDto> login(ProviderTokenDto payload) {
-        Mono<User> userMono = getUserFromProviderToken(payload);
+        Mono<User> userMono = getUserFromProviderToken(payload)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Email is not registered")));
         Mono<Tuple2<String, String>> tokensMono = userMono.flatMap(user -> Mono.zip(
                 jwtService.signRefreshToken(user.getId().toString(), refreshTokenSecret),
                 jwtService.signAccessToken(user.getId().toString())));

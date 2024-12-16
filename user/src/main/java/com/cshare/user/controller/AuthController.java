@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cshare.user.dto.auth.ProviderTokenDto;
 import com.cshare.user.core.oauth.OAuthProvider;
 import com.cshare.user.dto.ResponseDto;
-import com.cshare.user.dto.auth.CheckDto;
 import com.cshare.user.dto.auth.LoginResponseDto;
 import com.cshare.user.dto.auth.ProviderRegisterDto;
 import com.cshare.user.services.AuthService;
@@ -61,13 +60,5 @@ public class AuthController {
                     .build();
             return authService.register(payload, avatarImage, coverImage).map(ResponseDto::new);
         });
-    }
-
-    @PostMapping("/check")
-    public Mono<ResponseDto<CheckDto>> checkProviderToken(
-            @Valid @RequestBody ProviderTokenDto payload) {
-        return authService.getUserFromProviderToken(payload)
-                .map(user -> new CheckDto(true))
-                .defaultIfEmpty(new CheckDto(false)).map(ResponseDto::new);
     }
 }
