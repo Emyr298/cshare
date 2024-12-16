@@ -2,7 +2,6 @@ package com.cshare.user.controller;
 
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,57 +24,51 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    private final AuthService authService;
+        private final AuthService authService;
 
-    @GetMapping("/user")
-    public Mono<String> getUser(Authentication authentication) {
-        System.out.println(authentication.getPrincipal());
-        return Mono.just("Meh");
-    }
+        @PostMapping("/login")
+        public Mono<LoginResponseDto> login(
+                        @Valid @RequestBody ProviderTokenDto payload) {
+                return authService.login(payload);
+        }
 
-    @PostMapping("/login")
-    public Mono<LoginResponseDto> login(
-            @Valid @RequestBody ProviderTokenDto payload) {
-        return authService.login(payload);
-    }
+        @PostMapping("/register")
+        public Mono<LoginResponseDto> register(
+                        @RequestPart("avatarImage") Mono<FilePart> avatarImageMono,
+                        @RequestPart("coverImage") Mono<FilePart> coverImageMono,
+                        @RequestPart("username") String username,
+                        @RequestPart("name") String name,
+                        @RequestPart("provider") String provider,
+                        @RequestPart("providerAccessToken") String providerAccessToken) {
+                Mono<FilePart> avatarCheck = avatarImageMono
+                                .doOnError(ClassCastException.class,
+                                                exc -> Mono.error(new IllegalArgumentException(
+                                                                "avatarImage cannot be empty")));
+                Mono<FilePart> coverCheck = coverImageMono
+                                .doOnError(ClassCastException.class,
+                                                exc -> Mono.error(new IllegalArgumentException(
+                                                                "avatarImage cannot be empty")));
+                Mono<OAuthProvider> providerCheck = Mono.just(provider).map(OAuthProvider::valueOf);
 
-    @PostMapping("/register")
-    public Mono<LoginResponseDto> register(
-            @RequestPart("avatarImage") Mono<FilePart> avatarImageMono,
-            @RequestPart("coverImage") Mono<FilePart> coverImageMono,
-            @RequestPart("username") String username,
-            @RequestPart("name") String name,
-            @RequestPart("provider") String provider,
-            @RequestPart("providerAccessToken") String providerAccessToken) {
-        Mono<FilePart> avatarCheck = avatarImageMono
-                .doOnError(ClassCastException.class,
-                        exc -> Mono.error(new IllegalArgumentException(
-                                "avatarImage cannot be empty")));
-        Mono<FilePart> coverCheck = coverImageMono
-                .doOnError(ClassCastException.class,
-                        exc -> Mono.error(new IllegalArgumentException(
-                                "avatarImage cannot be empty")));
-        Mono<OAuthProvider> providerCheck = Mono.just(provider).map(OAuthProvider::valueOf);
+                return Mono.zip(avatarCheck, coverCheck, providerCheck).flatMap(tuple -> {
+                        FilePart avatarImage = tuple.getT1();
+                        FilePart coverImage = tuple.getT2();
+                        OAuthProvider prov = tuple.getT3();
+                        ProviderRegisterDto payload = ProviderRegisterDto.builder()
+                                        .provider(prov)
+                                        .providerAccessToken(providerAccessToken)
+                                        .username(username)
+                                        .name(name)
+                                        .build();
+                        return authService.register(payload, avatarImage, coverImage);
+                });
+        }
 
-        return Mono.zip(avatarCheck, coverCheck, providerCheck).flatMap(tuple -> {
-            FilePart avatarImage = tuple.getT1();
-            FilePart coverImage = tuple.getT2();
-            OAuthProvider prov = tuple.getT3();
-            ProviderRegisterDto payload = ProviderRegisterDto.builder()
-                    .provider(prov)
-                    .providerAccessToken(providerAccessToken)
-                    .username(username)
-                    .name(name)
-                    .build();
-            return authService.register(payload, avatarImage, coverImage);
-        });
-    }
-
-    @PostMapping("/check")
-    public Mono<CheckDto> checkProviderToken(
-            @Valid @RequestBody ProviderTokenDto payload) {
-        return authService.getUserFromProviderToken(payload)
-                .map(user -> new CheckDto(true))
-                .defaultIfEmpty(new CheckDto(false));
-    }
+        @PostMapping("/check")
+        public Mono<CheckDto> checkProviderToken(
+                        @Valid @RequestBody ProviderTokenDto payload) {
+                return authService.getUserFromProviderToken(payload)
+                                .map(user -> new CheckDto(true))
+                                .defaultIfEmpty(new CheckDto(false));
+        }
 }

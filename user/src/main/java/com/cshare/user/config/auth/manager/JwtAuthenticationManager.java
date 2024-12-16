@@ -1,8 +1,10 @@
 package com.cshare.user.config.auth.manager;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.cshare.user.config.auth.authentication.JwtAuthentication;
 import com.cshare.user.config.auth.authentication.UserAuthentication;
@@ -27,6 +29,8 @@ public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
                 .flatMap(userService::getUserById)
                 .map(UserAuthentication::new)
                 .cast(Authentication.class)
-                .switchIfEmpty(Mono.error(new PermissionException("Invalid access token")));
+                .switchIfEmpty(Mono.error(new PermissionException("Invalid access token")))
+                .onErrorResume(
+                        exc -> Mono.error(new ResponseStatusException(HttpStatus.UNAUTHORIZED, exc.getMessage())));
     }
 }
