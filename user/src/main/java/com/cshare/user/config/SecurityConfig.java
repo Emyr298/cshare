@@ -21,12 +21,12 @@ public class SecurityConfig {
             ServerHttpSecurity http,
             ReactiveAuthenticationManager reactiveAuthenticationManager,
             ServerAuthenticationConverter serverAuthenticationConverter) {
-        AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(reactiveAuthenticationManager);
+        AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(
+                reactiveAuthenticationManager);
         authenticationWebFilter.setServerAuthenticationConverter(serverAuthenticationConverter);
         return http
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/api/v1/auth/login").permitAll()
-                        .pathMatchers("/api/v1/auth/register").permitAll()
+                        .pathMatchers("/api/v1/auth/**").permitAll()
                         .anyExchange().authenticated())
                 .csrf(CsrfSpec::disable)
                 .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
