@@ -5,6 +5,7 @@ import { writing } from "./constants";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuthMutation } from "@/components/queries";
+import { NotRegisteredError } from "@/lib/errors/not-registered.error";
 
 export const LoginCallbackModule: React.FC<LoginCallbackModuleProps> = ({
   accessToken,
@@ -25,11 +26,21 @@ export const LoginCallbackModule: React.FC<LoginCallbackModuleProps> = ({
   useEffect(() => {
     if (data) {
       router.replace("/");
+    } else if (error && error instanceof NotRegisteredError) {
+      const params = new URLSearchParams(location.hash);
+      params.append("provider", provider);
+      router.replace(`/register${decodeURIComponent(params.toString())}`);
     }
-  }, [data]);
+  }, [data, error]);
 
-  const title = writing[error ? "error" : "loading"].title;
-  const description = writing[error ? "error" : "loading"].description;
+  const title =
+    writing[
+      error && !(error instanceof NotRegisteredError) ? "error" : "loading"
+    ].title;
+  const description =
+    writing[
+      error && !(error instanceof NotRegisteredError) ? "error" : "loading"
+    ].description;
 
   return (
     <div className="h-screen -m-4 flex items-center justify-center">

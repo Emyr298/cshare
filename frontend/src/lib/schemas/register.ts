@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { ACCEPTED_IMAGE_TYPES, MAX_FILE_SIZE } from "./constants";
+import {
+  ACCEPTED_IMAGE_TYPES,
+  MAX_FILE_SIZE,
+} from "../../components/elements/RegisterForm/constants";
 
 export const registerSchema = z.object({
   name: z.string().min(2, {
@@ -10,7 +13,14 @@ export const registerSchema = z.object({
   }),
   bio: z.string().optional(),
   avatarImage: z
-    .any()
+    .custom<File>(
+      (file) => {
+        return !!file && file instanceof File;
+      },
+      {
+        message: "Avatar is required",
+      },
+    )
     .refine(
       (file) => (file ? file.size <= MAX_FILE_SIZE : true),
       "Avatar size must be at most 5 MB.",
@@ -20,7 +30,14 @@ export const registerSchema = z.object({
       `Avatar must have type ${ACCEPTED_IMAGE_TYPES.join(", ")}.`,
     ),
   coverImage: z
-    .any()
+    .custom<File>(
+      (file) => {
+        return !!file && file instanceof File;
+      },
+      {
+        message: "Cover is required",
+      },
+    )
     .refine(
       (file) => (file ? file.size <= MAX_FILE_SIZE : true),
       "Cover size must be at most 5 MB.",

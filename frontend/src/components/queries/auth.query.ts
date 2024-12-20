@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AuthMutationParams, AuthInfo } from "./auth.interface";
-import { fetchAuthCredentials, fetchUser } from "@/lib/api";
+import { AuthMutationParams, AuthInfo, RegisterParams } from "./auth.interface";
+import { fetchAuthCredentials, fetchUser, registerUser } from "@/lib/api";
 import { useAuthStore } from "../stores";
 import { GUEST_USER } from "@/lib/auth";
 
@@ -41,6 +41,34 @@ export const useAuthMutation = () => {
       }
 
       const { accessToken, refreshToken } = await fetchAuthCredentials(
+        data.providerAccessToken,
+        data.provider,
+      );
+
+      setAccessToken(accessToken);
+      setRefreshToken(refreshToken);
+
+      queryClient.invalidateQueries({ queryKey: ["auth"] });
+
+      return { accessToken, refreshToken };
+    },
+  });
+};
+
+export const useRegister = () => {
+  const queryClient = useQueryClient();
+
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
+  const setRefreshToken = useAuthStore((state) => state.setRefreshToken);
+
+  return useMutation({
+    mutationFn: async (data: RegisterParams) => {
+      if (data.providerAccessToken.length === 0) {
+        throw new Error("invalid provider access token");
+      }
+
+      const { accessToken, refreshToken } = await registerUser(
+        data.payload,
         data.providerAccessToken,
         data.provider,
       );

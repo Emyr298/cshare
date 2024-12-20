@@ -7,7 +7,7 @@ import { ACCEPTED_IMAGE_TYPES_PROP } from "./constants";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { registerSchema } from "./schema";
+import { registerSchema } from "@/lib/schemas/register";
 import {
   Form,
   FormControl,
@@ -21,7 +21,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { FaAngleRight, FaPen } from "react-icons/fa";
 
-export const RegisterForm: React.FC<RegisterFormProps> = () => {
+export const RegisterForm: React.FC<RegisterFormProps> = ({
+  onSubmit,
+  errorMessage,
+}) => {
   const [avatarBlobUrl, setAvatarBlobUrl] = useState<string | null>(null);
   const [coverBlobUrl, setCoverBlobUrl] = useState<string | null>(null);
 
@@ -32,10 +35,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
       username: "",
     },
   });
-
-  const onSubmit = (values: z.infer<typeof registerSchema>) => {
-    console.log(values);
-  };
 
   const nameInitial = form
     .watch("name")
@@ -82,7 +81,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
                     className="hidden"
                     accept={ACCEPTED_IMAGE_TYPES_PROP}
                     onChange={(e) => {
-                      console.log("RERENDERED");
                       const file = e.target.files?.[0];
                       if (file) {
                         const blobUrl = URL.createObjectURL(file);
@@ -94,7 +92,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
                     }}
                   />
                 </FormControl>
-                <FormMessage className="px-4 text-center" />
               </FormItem>
             )}
           />
@@ -132,7 +129,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
                     className="hidden"
                     accept={ACCEPTED_IMAGE_TYPES_PROP}
                     onChange={(e) => {
-                      console.log("RERENDERED");
                       const file = e.target.files?.[0];
                       if (file) {
                         const blobUrl = URL.createObjectURL(file);
@@ -144,10 +140,17 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
                     }}
                   />
                 </FormControl>
-                <FormMessage className="px-4 text-center" />
               </FormItem>
             )}
           />
+          <div className="flex flex-col pt-2 px-4">
+            <span className="text-[0.8rem] font-medium text-destructive">
+              {form.formState.errors.avatarImage?.message}
+            </span>
+            <span className="text-[0.8rem] font-medium text-destructive">
+              {form.formState.errors.coverImage?.message}
+            </span>
+          </div>
           <div className="w-full px-8 py-4 flex flex-col items-end gap-2">
             <div className="w-full flex gap-4">
               <FormField
@@ -197,6 +200,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = () => {
             <Button type="submit" className="mt-2 pr-3">
               Complete <FaAngleRight />
             </Button>
+            <span className="block text-[0.8rem] font-medium text-destructive">
+              {errorMessage}
+            </span>
           </div>
         </form>
       </Form>
