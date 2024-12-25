@@ -1,11 +1,14 @@
 package com.cshare.user.controller;
 
+import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.reactive.resource.NoResourceFoundException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.ServerWebInputException;
 import org.springframework.web.server.handler.ResponseStatusExceptionHandler;
@@ -15,13 +18,26 @@ import com.cshare.user.exceptions.NotFoundException;
 import com.cshare.user.exceptions.PermissionException;
 import com.cshare.user.utils.ErrorUtils;
 
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @ControllerAdvice
+@Component
+@RequiredArgsConstructor
 public class GlobalExceptionHandler extends ResponseStatusExceptionHandler {
+    private final Logger logger;
+
     @ExceptionHandler(NotFoundException.class)
     public Mono<ResponseEntity<ErrorDto>> handleNotFoundException(NotFoundException ex, ServerWebExchange exchange) {
+        HttpStatusCode statusCode = HttpStatus.NOT_FOUND;
+        return Mono.just(ResponseEntity.status(statusCode)
+                .body(ErrorUtils.createError(statusCode, exchange, ex.getMessage())));
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public Mono<ResponseEntity<ErrorDto>> handleNoResourceFoundException(NoResourceFoundException ex,
+            ServerWebExchange exchange) {
         HttpStatusCode statusCode = HttpStatus.NOT_FOUND;
         return Mono.just(ResponseEntity.status(statusCode)
                 .body(ErrorUtils.createError(statusCode, exchange, ex.getMessage())));
@@ -73,7 +89,7 @@ public class GlobalExceptionHandler extends ResponseStatusExceptionHandler {
     @ExceptionHandler(Exception.class)
     public Mono<ResponseEntity<ErrorDto>> handleGenericException(Exception ex,
             ServerWebExchange exchange) {
-        System.out.println(ex);
+        logger.error(ex.getMessage(), ex);
         HttpStatus statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
         return Mono.just(ResponseEntity.status(statusCode)
                 .body(ErrorUtils.createError(statusCode, exchange, "Internal Server Error")));
