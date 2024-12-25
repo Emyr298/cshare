@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cshare.user.dto.Response;
 import com.cshare.user.dto.follow.FollowDto;
-import com.cshare.user.dto.follow.FollowedResponse;
+import com.cshare.user.dto.follow.FollowListResponse;
 import com.cshare.user.models.User;
 import com.cshare.user.services.FollowService;
 import com.cshare.user.utils.AuthUtils;
@@ -31,13 +31,26 @@ public class FollowController {
     private final FollowService followService;
 
     @GetMapping("/followed")
-    public Mono<ResponseEntity<FollowedResponse>> getFollowed(Authentication authentication) {
+    public Mono<ResponseEntity<FollowListResponse>> getFollowed(Authentication authentication) {
         User user = AuthUtils.getCurrentUser(authentication);
         Flux<User> users = followService.getFollowedUsers(user.getId());
         return users
                 .collectList()
-                .map(userList -> FollowedResponse.builder()
+                .map(userList -> FollowListResponse.builder()
                         .message("Successfully fetched followed users")
+                        .users(userList)
+                        .build())
+                .map(data -> ResponseEntity.ok().body(data));
+    }
+
+    @GetMapping("/followers")
+    public Mono<ResponseEntity<FollowListResponse>> getFollowers(Authentication authentication) {
+        User user = AuthUtils.getCurrentUser(authentication);
+        Flux<User> users = followService.getFollowerUsers(user.getId());
+        return users
+                .collectList()
+                .map(userList -> FollowListResponse.builder()
+                        .message("Successfully fetched followers")
                         .users(userList)
                         .build())
                 .map(data -> ResponseEntity.ok().body(data));

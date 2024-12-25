@@ -10,7 +10,11 @@ import reactor.core.publisher.Mono;
 public interface FollowService {
     Flux<UUID> getFollowedUserIds(UUID userId);
 
+    Flux<UUID> getFollowerUserIds(UUID userId);
+
     Flux<User> getFollowedUsers(UUID userId);
+
+    Flux<User> getFollowerUsers(UUID userId);
 
     Mono<Void> followUser(UUID followerId, UUID followedId);
 

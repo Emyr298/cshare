@@ -23,9 +23,20 @@ public class FollowServiceImpl implements FollowService {
         return followRepository.findByFollowerId(userId).map(Follow::getFollowedId);
     }
 
+    public Flux<UUID> getFollowerUserIds(UUID userId) {
+        return followRepository.findByFollowedId(userId).map(Follow::getFollowerId);
+    }
+
     public Flux<User> getFollowedUsers(UUID userId) {
         Flux<UUID> followedIds = getFollowedUserIds(userId);
         return followedIds
+                .collectList()
+                .flatMapMany(userService::getUserByIds);
+    }
+
+    public Flux<User> getFollowerUsers(UUID userId) {
+        Flux<UUID> followerIds = getFollowerUserIds(userId);
+        return followerIds
                 .collectList()
                 .flatMapMany(userService::getUserByIds);
     }

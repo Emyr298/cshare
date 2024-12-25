@@ -12,6 +12,6 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
-public class FollowedResponse extends Response {
+public class FollowListResponse extends Response {
     private List<User> users;
 }
