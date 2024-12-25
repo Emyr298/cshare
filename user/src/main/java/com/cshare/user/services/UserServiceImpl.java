@@ -1,5 +1,6 @@
 package com.cshare.user.services;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import com.cshare.user.models.User;
 import com.cshare.user.repositories.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -33,5 +35,9 @@ public class UserServiceImpl implements UserService {
                 .coverUrl(payload.getCoverUrl())
                 .build();
         return userRepository.save(user);
+    }
+
+    public Flux<User> getUserByIds(List<UUID> userIds) {
+        return userRepository.findByIdIn(userIds);
     }
 }
