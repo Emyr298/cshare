@@ -1,10 +1,14 @@
 package com.cshare.user.controller;
 
+import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.reactive.resource.NoResourceFoundException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.ServerWebInputException;
 import org.springframework.web.server.handler.ResponseStatusExceptionHandler;
@@ -12,44 +16,82 @@ import org.springframework.web.server.handler.ResponseStatusExceptionHandler;
 import com.cshare.user.dto.ErrorDto;
 import com.cshare.user.exceptions.NotFoundException;
 import com.cshare.user.exceptions.PermissionException;
+import com.cshare.user.utils.ErrorUtils;
 
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @ControllerAdvice
+@Component
+@RequiredArgsConstructor
 public class GlobalExceptionHandler extends ResponseStatusExceptionHandler {
+    private final Logger logger;
+
     @ExceptionHandler(NotFoundException.class)
     public Mono<ResponseEntity<ErrorDto>> handleNotFoundException(NotFoundException ex, ServerWebExchange exchange) {
-        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ex.getMessage())));
+        HttpStatusCode statusCode = HttpStatus.NOT_FOUND;
+        return Mono.just(ResponseEntity.status(statusCode)
+                .body(ErrorUtils.createError(statusCode, exchange, ex.getMessage())));
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public Mono<ResponseEntity<ErrorDto>> handleNoResourceFoundException(NoResourceFoundException ex,
+            ServerWebExchange exchange) {
+        HttpStatusCode statusCode = HttpStatus.NOT_FOUND;
+        return Mono.just(ResponseEntity.status(statusCode)
+                .body(ErrorUtils.createError(statusCode, exchange, ex.getMessage())));
     }
 
     @ExceptionHandler(PermissionException.class)
     public Mono<ResponseEntity<ErrorDto>> handlePermissionException(PermissionException ex,
             ServerWebExchange exchange) {
-        return Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorDto(ex.getMessage())));
+        HttpStatusCode statusCode = HttpStatus.FORBIDDEN;
+        return Mono.just(ResponseEntity.status(statusCode)
+                .body(ErrorUtils.createError(statusCode, exchange, ex.getMessage())));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public Mono<ResponseEntity<ErrorDto>> handlePermissionException(IllegalArgumentException ex,
+            ServerWebExchange exchange) {
+        HttpStatusCode statusCode = HttpStatus.BAD_REQUEST;
+        return Mono.just(ResponseEntity.status(statusCode)
+                .body(ErrorUtils.createError(statusCode, exchange, ex.getMessage())));
+    }
+
+    @ExceptionHandler(ClassCastException.class)
+    public Mono<ResponseEntity<ErrorDto>> handlePermissionException(ClassCastException ex,
+            ServerWebExchange exchange) {
+        HttpStatusCode statusCode = HttpStatus.BAD_REQUEST;
+        return Mono.just(ResponseEntity.status(statusCode)
+                .body(ErrorUtils.createError(statusCode, exchange,
+                        "A file attribute contains a non-file value instead of a file")));
     }
 
     @ExceptionHandler(WebExchangeBindException.class)
     public Mono<ResponseEntity<ErrorDto>> handleExchangeBindException(WebExchangeBindException ex,
             ServerWebExchange exchange) {
+        HttpStatusCode statusCode = ex.getStatusCode();
         return Flux.fromIterable(ex.getFieldErrors())
                 .map(error -> error.getField() + " " + error.getDefaultMessage())
-                .collectList().map(
-                        errors -> ResponseEntity
-                                .status(ex.getStatusCode())
-                                .body(new ErrorDto(String.join(", ", errors))));
+                .collectList().map(errors -> ResponseEntity.status(statusCode)
+                        .body(ErrorUtils.createError(statusCode, exchange, String.join(", ", errors))));
     }
 
     @ExceptionHandler(ServerWebInputException.class)
     public Mono<ResponseEntity<ErrorDto>> handleBadRequestException(ServerWebInputException ex,
             ServerWebExchange exchange) {
-        return Mono.just(ResponseEntity.status(ex.getStatusCode()).body(new ErrorDto(ex.getReason())));
+        HttpStatusCode statusCode = ex.getStatusCode();
+        return Mono.just(ResponseEntity.status(statusCode)
+                .body(ErrorUtils.createError(statusCode, exchange, ex.getReason())));
     }
 
     @ExceptionHandler(Exception.class)
-    public Mono<ResponseEntity<ErrorDto>> handleGenericException(Exception ex, ServerWebExchange exchange) {
-        System.out.println(ex);
-        return Mono.just(
-                ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorDto("Internal Server Error")));
+    public Mono<ResponseEntity<ErrorDto>> handleGenericException(Exception ex,
+            ServerWebExchange exchange) {
+        logger.error(ex.getMessage(), ex);
+        HttpStatus statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+        return Mono.just(ResponseEntity.status(statusCode)
+                .body(ErrorUtils.createError(statusCode, exchange, "Internal Server Error")));
     }
 }

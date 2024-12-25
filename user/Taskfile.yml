@@ -1,0 +1,14 @@
+version: "3"
+
+dotenv: [".env"]
+
+tasks:
+  start:
+    desc: Start the application.
+    cmds:
+      - mvn spring-boot:run
+
+  db:migrate:
+    desc: Migrate the database.
+    cmds:
+      - mvn flyway:migrate

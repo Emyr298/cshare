@@ -1,13 +1,14 @@
 package com.cshare.user.services;
 
-import org.springframework.stereotype.Service;
+import com.cshare.user.dto.users.CreateUserDto;
+import com.cshare.user.models.User;
 
-import com.cshare.user.repositories.UserRepository;
+import reactor.core.publisher.Mono;
 
-import lombok.RequiredArgsConstructor;
+public interface UserService {
+    Mono<User> getUserById(String userId);
 
-@Service
-@RequiredArgsConstructor
-public class UserService {
-    private final UserRepository userRepository;
+    Mono<User> getUserByEmail(String email);
+
+    Mono<User> createUser(CreateUserDto payload);
 }

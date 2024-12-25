@@ -1,7 +1,8 @@
 export interface User {
   username: string;
-  name: string;
-  email: string;
+  firstName: string;
+  lastName: string;
+  avatarUrl: string;
 }
 
 export interface UserPublic {

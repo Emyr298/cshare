@@ -1,3 +1,3 @@
 export interface ProfileAboutProps {
-  username: string
+  username: string;
 }

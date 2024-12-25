@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS "users" (
     "cover_url" TEXT NOT NULL,
     "created_at" TIMESTAMP NOT NULL,
     "updated_at" TIMESTAMP NOT NULL,
-    "deleted_at" TIMESTAMP NOT NULL,
+    "deleted_at" TIMESTAMP NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "follows" (
@@ -22,5 +22,5 @@ CREATE TABLE IF NOT EXISTS "follows" (
     "deleted_at" TIMESTAMP NOT NULL,
     FOREIGN KEY ("followed_id") REFERENCES "users"("id"),
     FOREIGN KEY ("follower_id") REFERENCES "users"("id"),
-    CONSTRAINT unique_relation UNIQUE ("followed_id", "follower_id", "deleted_at"),
+    CONSTRAINT unique_relation UNIQUE ("followed_id", "follower_id", "deleted_at")
 );

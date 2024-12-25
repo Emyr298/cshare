@@ -1,3 +1,3 @@
 export interface ProfilePostProps {
-  username: string
+  username: string;
 }

@@ -1,4 +1,5 @@
 import { ClientConfig } from "@/config";
+import { User } from "@/types";
 
 export const googleSignIn = async () => {
   const oauthEndpoint = new URL(ClientConfig.oauthCredentials.google.endpoint);
@@ -7,4 +8,15 @@ export const googleSignIn = async () => {
   ).toString();
 
   window.location.href = oauthEndpoint.toString();
+};
+
+export const GUEST_USER: User = {
+  username: "guest",
+  firstName: "Guest",
+  lastName: "",
+  avatarUrl: "",
+};
+
+export const guestCheck = (user: User) => {
+  return user.username === GUEST_USER.username;
 };

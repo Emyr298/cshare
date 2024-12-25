@@ -1,12 +1,19 @@
-import { IProfileResponse } from "@/lib/api";
-import { OAuthProvider } from "@/types";
+import { registerSchema } from "@/lib/schemas/register";
+import { OAuthProvider, User } from "@/types";
+import { z } from "zod";
 
-export interface IAuthMutationParams {
+export interface AuthMutationParams {
   providerAccessToken: string;
   provider: OAuthProvider;
 }
 
-export interface IUser {
-  profile: IProfileResponse;
+export interface AuthInfo {
+  data: User;
   isAuthenticated: boolean;
+}
+
+export interface RegisterParams {
+  payload: z.infer<typeof registerSchema>;
+  provider: OAuthProvider;
+  providerAccessToken: string;
 }
