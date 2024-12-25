@@ -6,6 +6,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import com.cshare.user.models.Follow;
+import com.cshare.user.models.User;
 import com.cshare.user.repositories.FollowRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -16,9 +17,17 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class FollowServiceImpl implements FollowService {
     private final FollowRepository followRepository;
+    private final UserService userService;
 
     public Flux<UUID> getFollowedUserIds(UUID userId) {
-        return followRepository.findByFollowerId(userId).map(Follow::getId);
+        return followRepository.findByFollowerId(userId).map(Follow::getFollowedId);
+    }
+
+    public Flux<User> getFollowedUsers(UUID userId) {
+        Flux<UUID> followedIds = getFollowedUserIds(userId);
+        return followedIds
+                .collectList()
+                .flatMapMany(userService::getUserByIds);
     }
 
     public Mono<Void> followUser(UUID followerId, UUID followedId) {
