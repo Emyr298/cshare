@@ -9,4 +9,6 @@ public interface FollowService {
     Flux<UUID> getFollowedUserIds(UUID userId);
 
     Mono<Void> followUser(UUID followerId, UUID followedId);
+
+    Mono<Void> unfollowUser(UUID followerId, UUID followedId);
 }

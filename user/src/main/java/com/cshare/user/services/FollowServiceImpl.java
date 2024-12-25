@@ -30,4 +30,8 @@ public class FollowServiceImpl implements FollowService {
                 .onErrorMap(DuplicateKeyException.class, exc -> new IllegalArgumentException("User already followed"))
                 .then();
     }
+
+    public Mono<Void> unfollowUser(UUID followerId, UUID followedId) {
+        return followRepository.deleteByFollowerIdAndFollowedId(followerId, followedId);
+    }
 }
