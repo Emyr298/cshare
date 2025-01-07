@@ -8,8 +8,8 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     volumes:
-      - cshare-zookeeper-data:/var/lib/zookeeper/data
-      - cshare-zookeeper-log:/var/lib/zookeeper/log
+      - ./data/zookeeper/data:/var/lib/zookeeper/data
+      - ./data/zookeeper/log:/var/lib/zookeeper/log
     networks:
       - cshare-network
 
@@ -28,9 +28,14 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     volumes:
-      - cshare-kafka-data:/var/lib/kafka/data
+      - ./data/kafka/data:/var/lib/kafka/data
     networks:
       - cshare-network
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   debezium:
     image: quay.io/debezium/connect:latest
@@ -43,13 +48,19 @@ services:
       GROUP_ID: debezium
       CONFIG_STORAGE_TOPIC: debezium_configs
       OFFSET_STORAGE_TOPIC: debezium_offsets
+      CONTENT_POSTGRES_USER: ${CONTENT_POSTGRES_USER}
+      CONTENT_POSTGRES_PASSWORD: ${CONTENT_POSTGRES_PASSWORD}
+      CONTENT_POSTGRES_DB: ${CONTENT_POSTGRES_DB}
     depends_on:
-      - kafka
-      - content-db
+      kafka:
+        condition: service_healthy
+      content-db:
+        condition: service_healthy
     volumes:
-      - cshare-debezium-data:/kafka/data
-      - cshare-debezium-logs:/kafka/logs
-      - cshare-debezium-config:/kafka/config
+      - ./data/debezium/data:/kafka/data
+      - ./data/debezium/logs:/kafka/logs
+      - ./data/debezium/config:/kafka/config
+      - ./scripts/debezium-connector-init.sh:/scripts/debezium-connector-init.sh
     networks:
       - cshare-network
 
@@ -73,13 +84,22 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${CONTENT_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${CONTENT_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${CONTENT_POSTGRES_DB}
     volumes:
-      - cshare-postgres-data:/var/lib/postgresql/data
+      - ./data/postgres/data:/var/lib/postgresql/data
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"
     networks:
       - cshare-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${CONTENT_POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   localstack:
     image: localstack/localstack
@@ -91,7 +111,7 @@ services:
       - SERVICES=s3
       - DEBUG=1
     volumes:
-      - cshare-localstack-data:/var/lib/localstack
+      - ./data/localstack:/var/lib/localstack
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - cshare-network
@@ -134,21 +154,3 @@ services:
 networks:
   cshare-network:
     driver: bridge
-
-volumes:
-  cshare-zookeeper-data:
-    external: true
-  cshare-zookeeper-log:
-    external: true
-  cshare-postgres-data:
-    external: true
-  cshare-kafka-data:
-    external: true
-  cshare-localstack-data:
-    external: true
-  cshare-debezium-data:
-    external: true
-  cshare-debezium-logs:
-    external: true
-  cshare-debezium-config:
-    external: true
