@@ -1,4 +1,4 @@
-import requests
+import requests, uuid
 from typing import Dict, Any, Optional
 
 from . import KafkaMessageConsumer
@@ -32,6 +32,8 @@ class ImageToTextConsumer(KafkaMessageConsumer):
     
     def _send_event(self, content_resource: ContentResource, caption: str):
         self.producer.publish({
+            "event_id": str(uuid.uuid4()),
             "content_resource_id": content_resource.id,
+            "content_id": content_resource.content_id,
             "text": caption,
         }, topic="content.image-to-text.done", key="done-"+content_resource.id)
