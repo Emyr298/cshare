@@ -1,3 +1,5 @@
+**/DebugController.java
+
 .env
 uploads/*
 !uploads/.gitkeep

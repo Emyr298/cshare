@@ -13,9 +13,6 @@ public class ContentResourceText {
     private String id;
 
     @NotNull
-    private String eventId;
-
-    @NotNull
     private String contentId;
 
     @NotNull
