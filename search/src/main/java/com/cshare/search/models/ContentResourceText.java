@@ -13,8 +13,5 @@ public class ContentResourceText {
     private String id;
 
     @NotNull
-    private String contentId;
-
-    @NotNull
     private String text;
 }

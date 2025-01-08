@@ -8,6 +8,7 @@ import com.cshare.search.dto.ImageToTextResult;
 import com.cshare.search.models.Content;
 import com.cshare.search.models.ContentResourceText;
 import com.cshare.search.repositories.ContentRepository;
+import com.cshare.search.repositories.DeletedContentResourceRepository;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
@@ -17,9 +18,10 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class SearchServiceImpl implements SearchService {
     private final ContentRepository contentRepository;
+    private final DeletedContentResourceRepository deletedContentResourceRepository;
 
     public Flux<Content> search(String query, Integer pageNumber, Integer pageSize) {
-        return contentRepository.findByTitleOrDescription(query, query, PageRequest.of(pageNumber, pageSize));
+        return contentRepository.findByText(query, PageRequest.of(pageNumber, pageSize));
     }
 
     public Mono<Content> digest(DigestContentDto data) {
@@ -36,10 +38,12 @@ public class SearchServiceImpl implements SearchService {
     }
 
     public Mono<Void> ingestImageToText(ImageToTextResult result) {
-        // TODO: check on content service if image still exists -> prevent race
-        // condition DELETE first before process done
+        var isDeletedMono = deletedContentResourceRepository
+                .findById(result.getContentResourceId())
+                .hasElement();
+
         var contentMono = contentRepository.findById(result.getContentId()); // if content with id not found, ignore
-        return contentMono.flatMap(content -> {
+        var processMono = contentMono.flatMap(content -> {
             return Flux.fromIterable(content.getResourceTexts())
                     .any(contentResourceText -> {
                         var curId = contentResourceText.getId();
@@ -49,15 +53,22 @@ public class SearchServiceImpl implements SearchService {
                         if (Boolean.FALSE.equals(isExist)) {
                             var newText = ContentResourceText.builder()
                                     .id(result.getContentResourceId())
-                                    .contentId(result.getContentId())
                                     .text(result.getText())
                                     .build();
                             content.getResourceTexts().add(newText);
-                            System.out.println(content.getResourceTexts());
-                            return contentRepository.save(content);
+                            return contentRepository
+                                    .save(content);
                         }
                         return Mono.empty();
                     });
-        }).flatMap(test -> Mono.empty());
+        });
+
+        return isDeletedMono.flatMap(isDeleted -> {
+            if (Boolean.TRUE.equals(isDeleted)) {
+                return Mono.empty();
+            } else {
+                return processMono.then();
+            }
+        });
     }
 }

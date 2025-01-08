@@ -8,7 +8,6 @@ import org.springframework.data.repository.reactive.ReactiveSortingRepository;
 import com.cshare.search.models.Content;
 
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 public interface ContentRepository
         extends ReactiveSortingRepository<Content, String>, ReactiveCrudRepository<Content, String> {
@@ -21,7 +20,5 @@ public interface ContentRepository
                     }
                 }
             """)
-    public Flux<Content> findByTitleOrDescription(String title, String description, Pageable pageable);
-
-    // public Mono<Content> findById(String id);
+    public Flux<Content> findByText(String text, Pageable pageable);
 }
