@@ -12,22 +12,13 @@ import reactor.core.publisher.Flux;
 public interface ContentRepository
         extends ReactiveSortingRepository<Content, String>, ReactiveCrudRepository<Content, String> {
     @Query("""
-        {
-            "bool": {
-                "should": [
-                    {
-                        "fuzzy": {
-                            "title": "?0"
-                        }
-                    },
-                    {
-                        "fuzzy": {
-                            "description": "?0"
-                        }
+                {
+                    "multi_match": {
+                        "query": "?0",
+                        "fields": ["resourceTexts.text", "title", "description"],
+                        "fuzziness": "AUTO"
                     }
-                ]
-            }
-        }
-    """)
+                }
+            """)
     public Flux<Content> findByTitleOrDescription(String title, String description, Pageable pageable);
 }
