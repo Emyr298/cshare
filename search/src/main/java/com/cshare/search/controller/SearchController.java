@@ -11,6 +11,7 @@ import com.cshare.search.dto.DigestContentDto;
 import com.cshare.search.models.Content;
 import com.cshare.search.services.SearchService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -20,20 +21,18 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class SearchController {
     private final SearchService searchService;
-    
+
     @GetMapping("/")
     public Flux<Content> search(
-        @RequestParam String query,
-        @RequestParam Integer pageNumber,
-        @RequestParam Integer pageSize
-    ) {
+            @RequestParam String query,
+            @RequestParam Integer pageNumber,
+            @RequestParam Integer pageSize) {
         return searchService.search(query, pageNumber, pageSize);
     }
 
     @PostMapping("/digest")
     public Mono<Content> digest(
-        @RequestBody DigestContentDto payload
-    ) {
+            @Valid @RequestBody DigestContentDto payload) {
         return searchService.digest(payload);
     }
 }

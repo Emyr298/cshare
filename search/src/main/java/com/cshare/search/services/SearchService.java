@@ -22,13 +22,14 @@ public class SearchService {
 
     public Mono<Content> digest(DigestContentDto data) {
         Content content = Content.builder()
-            .title(data.getTitle())
-            .description(data.getDescription())
-            .userId(data.getUserId())
-            .createdAt(data.getCreatedAt())
-            .updatedAt(data.getUpdatedAt())
-            .publishedAt(data.getPublishedAt())
-            .build();
+                .title(data.getTitle())
+                .description(data.getDescription())
+                .userId(data.getUserId())
+                .createdAt(data.getCreatedAt())
+                .updatedAt(data.getUpdatedAt())
+                .publishedAt(data.getPublishedAt())
+                .resourceTexts(data.getResourceTexts())
+                .build();
         return contentRepository.save(content);
     }
 }

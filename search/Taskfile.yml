@@ -1,0 +1,9 @@
+version: "3"
+
+dotenv: [".env"]
+
+tasks:
+  start:
+    desc: Start the application.
+    cmds:
+      - mvn spring-boot:run

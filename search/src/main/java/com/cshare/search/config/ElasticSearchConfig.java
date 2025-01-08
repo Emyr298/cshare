@@ -16,11 +16,15 @@ public class ElasticSearchConfig extends ReactiveElasticsearchConfiguration {
     @Value("${cshare.search.elastic-search.password}")
     private String elasticSearchPassword;
 
+    @Value("${cshare.search.elastic-search.certificate}")
+    private String elasticSearchCertificate;
+
     @Override
     public ClientConfiguration clientConfiguration() {
         return ClientConfiguration.builder()
-            .connectedTo(elasticSearchHost)
-            .withBasicAuth(elasticSearchUser, elasticSearchPassword)
-            .build();
+                .connectedTo(elasticSearchHost)
+                .usingSsl(elasticSearchCertificate)
+                .withBasicAuth(elasticSearchUser, elasticSearchPassword)
+                .build();
     }
 }
