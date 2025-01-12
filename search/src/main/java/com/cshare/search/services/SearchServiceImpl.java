@@ -25,7 +25,8 @@ public class SearchServiceImpl implements SearchService {
     }
 
     public Mono<Content> digest(DigestContentDto data) {
-        Content content = Content.builder() // TODO: set id as contentId
+        Content content = Content.builder()
+                .id(data.getId())
                 .title(data.getTitle())
                 .description(data.getDescription())
                 .userId(data.getUserId())

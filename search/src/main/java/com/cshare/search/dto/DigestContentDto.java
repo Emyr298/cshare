@@ -14,6 +14,9 @@ import lombok.Data;
 @AllArgsConstructor
 public class DigestContentDto {
     @NotNull
+    private String id;
+
+    @NotNull
     private String title;
 
     @NotNull
