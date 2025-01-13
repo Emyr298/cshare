@@ -1,9 +1,13 @@
 package com.cshare.search.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.client.ClientConfiguration;
 import org.springframework.data.elasticsearch.client.elc.ReactiveElasticsearchConfiguration;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
 public class ElasticSearchConfig extends ReactiveElasticsearchConfiguration {
@@ -26,5 +30,12 @@ public class ElasticSearchConfig extends ReactiveElasticsearchConfiguration {
                 .usingSsl(elasticSearchCertificate)
                 .withBasicAuth(elasticSearchUser, elasticSearchPassword)
                 .build();
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        return mapper;
     }
 }

@@ -16,7 +16,7 @@ public class ImageToTextServiceImpl implements ImageToTextService {
     private final Flux<ReceiverRecord<String, ImageToTextResult>> receiver;
     private final SearchService searchService;
 
-    @PostConstruct
+    // @PostConstruct
     public void startReceiver() {
         receiver
                 .concatMap(message -> {
